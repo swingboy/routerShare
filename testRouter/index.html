@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>histroy router</title>
+</head>
+<body>
+    <div class="main">
+        <div class="menu">
+            <a href="/">首页</a>
+            <a href="/profile">个人中心</a>
+            <a href="/articles">文章列表</a>
+        </div>
+        <div class="content"></div>
+    </div>
+
+    <script type="text/javascript">
+    /*简单的实现思路：
+    用户提供一个routeMap，是url到改变DOM方法的映射。
+    初始化页面，使用replaceState来改变浏览器显示的url（无刷新），并存储当前path到state，同时调用routeMap[location.pathname]()来改变DOM。
+    用户进入新的页面，使用pushState来改变浏览器URL，存储当前path到state，同时调用对应的改变DOM的方法。
+    通过监听window的popstate事件来响应浏览器的回退和前进，在事件处理方法中，通过e.state.path来得到当前path，并执行routeMap[path]()来改变DOM。
+    */
+        const $ = (selector) => document.querySelector(selector);
+        const routeMap = {
+            '/': () => {
+                const content = $('.content');
+                content.innerHTML = '<div>the Home Page</div>';
+            },
+            '/profile': () => {
+                const content = $('.content');
+                content.innerHTML = '<div>the Profile Page</div>';
+            },
+            '/articles': () => {
+                const content = $('.content');
+                content.innerHTML = `<div>
+                    <p>the Article Page</p>
+                    <ul>
+                        <li>文章1</li>
+                        <li>文章2</li>
+                        <li>文章3</li>
+                    </ul>
+                </div>`;
+            }
+        };
+        class Route {
+            constructor(routeMap) {
+                this.routeMap = routeMap;
+                this._bindPopState();
+            }
+
+            init(path) {
+                path = Route.correctPath(path);
+                history.replaceState({ path: path }, '', path);
+                this.routeMap[path] && this.routeMap[path]();
+            }
+
+            go(path) {
+                path = Route.correctPath(path);
+                history.pushState({ path: path }, '', path);
+                this.routeMap[path] && this.routeMap[path]();
+            }
+
+            _bindPopState() {
+                window.addEventListener('popstate', (e) => {
+                    const path = e.state && e.state.path;
+                    this.routeMap[path] && this.routeMap[path]();
+                });
+            }
+
+            static correctPath(path) {
+                if(path !== '/' && path.slice(-1) === '/'){
+                    path = path.match(/(.+)\/$/)[1];
+                }
+                return path;
+            }
+        }
+
+        const router = new Route(routeMap);
+        router.init(location.pathname);
+        
+        $('.menu').addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                router.go(e.target.getAttribute('href'))
+            }
+        });
+    </script>
+</body>
+
+</html>

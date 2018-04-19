@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>hash router</title>
+    <style>
+        div{
+            border: 1px solid red;
+            width:200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <ul>
+            <li><a href="#/">turn white</a></li> 
+            <li><a href="#/blue">turn blue</a></li> 
+            <li><a href="#/green">turn green</a></li>
+        </ul>
+    </div> 
+<script>
+    function Router() {
+        this.routes = {};
+        this.currentUrl = '';
+    }
+    Router.prototype.addRoute = function(path, callback) {
+        this.routes[path] = callback || function(){};
+    };
+    Router.prototype.refresh = function(e) {
+        this.currentUrl = location.hash.slice(1) || '/';
+        console.log(e.oldURL , e.newURL);
+        this.routes[this.currentUrl]();
+    };
+    Router.prototype.init = function() {
+        window.addEventListener('load', this.refresh.bind(this), false);
+        window.addEventListener('hashchange', this.refresh.bind(this), false);
+    }
+    window.Router = new Router();
+    window.Router.init();
+    let content = document.querySelector('div');
+    
+    function changeBgColor(color) {
+        content.style.backgroundColor = color;
+    }
+    Router.addRoute('/', function() {
+        changeBgColor('white');
+    });
+    Router.addRoute('/blue', function() {
+        changeBgColor('blue');
+    });
+    Router.addRoute('/green', function() {
+        changeBgColor('green');
+    });
+</script>
+</body>
+</html>
